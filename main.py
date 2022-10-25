@@ -5,6 +5,7 @@ from bingads.authorization import AuthorizationData, OAuthDesktopMobileAuthCodeG
 import sys
 import webbrowser
 
+from bingads.v13.reporting import ReportingServiceManager
 from past.builtins import raw_input
 from time import gmtime, strftime
 from suds import WebFault
@@ -50,8 +51,15 @@ def authenticate(authorization_data):
 
 def authenticate_with_oauth(authorization_data):
 
-    authentication=OAuthDesktopMobileAuthCodeGrant(
+    class OAuthDesktopMobileAuthCodeGrantWithSecret(OAuthDesktopMobileAuthCodeGrant):
+        def __init__(self, *args, client_secret=None, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._client_secret = client_secret
+
+    # authentication=OAuthDesktopMobileAuthCodeGrant(
+    authentication=OAuthDesktopMobileAuthCodeGrantWithSecret(
         client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
         env=ENVIRONMENT
     )
 
@@ -365,6 +373,8 @@ def main(authorization_data):
 
 # Main execution
 if __name__ == '__main__':
+    BING_ENVIRONMENT = 'production'
+    API_VERSION = 13
 
     print("Loading the web service client proxies...")
 
@@ -380,6 +390,19 @@ if __name__ == '__main__':
         version=13,
         authorization_data=authorization_data,
         environment=ENVIRONMENT,
+    )
+
+    reporting_service_manager = ReportingServiceManager(
+        authorization_data=authorization_data,
+        poll_interval_in_milliseconds=5000,
+        environment=BING_ENVIRONMENT,
+    )
+
+    reporting_service = ServiceClient(
+        service='ReportingService',
+        authorization_data=authorization_data,
+        environment=BING_ENVIRONMENT,
+        version=API_VERSION,
     )
 
     authenticate(authorization_data)
