@@ -11,6 +11,8 @@ from time import gmtime, strftime
 from suds import WebFault
 
 # Required
+from job import build_bing_report_request, download_campaign_report
+
 CLIENT_ID = 'd2dad530-e0d5-40bf-ba44-19f5d84494f2'
 CLIENT_SECRET = 'eQs8Q~L1Tw-nj4aNa1PIOnL087i~qfXYiRM1ibdW'
 DEVELOPER_TOKEN='1298EB0EEF671723'
@@ -51,17 +53,19 @@ def authenticate(authorization_data):
 
 def authenticate_with_oauth(authorization_data):
 
-    class OAuthDesktopMobileAuthCodeGrantWithSecret(OAuthDesktopMobileAuthCodeGrant):
-        def __init__(self, *args, client_secret=None, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._client_secret = client_secret
+    # class OAuthDesktopMobileAuthCodeGrantWithSecret(OAuthDesktopMobileAuthCodeGrant):
+    #     def __init__(self, *args, client_secret=None, **kwargs):
+    #         super().__init__(*args, **kwargs)
+    #         self._client_secret = client_secret
 
-    # authentication=OAuthDesktopMobileAuthCodeGrant(
-    authentication=OAuthDesktopMobileAuthCodeGrantWithSecret(
+    authentication=OAuthDesktopMobileAuthCodeGrant(
+    # authentication=OAuthDesktopMobileAuthCodeGrantWithSecret(
         client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
+        # client_secret=CLIENT_SECRET,
         env=ENVIRONMENT
     )
+
+    authentication.client_secret = CLIENT_SECRET
 
     # It is recommended that you specify a non guessable 'state' request parameter to help prevent
     # cross site request forgery (CSRF).
@@ -407,4 +411,9 @@ if __name__ == '__main__':
 
     authenticate(authorization_data)
 
-    main(authorization_data)
+    # main(authorization_data)
+
+    report_request = build_bing_report_request(reporting_service, authorization_data)
+    report_data = download_campaign_report(report_request, authorization_data)
+
+    print(report_data)
